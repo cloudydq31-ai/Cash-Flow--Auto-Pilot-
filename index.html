@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CashFlow-AutoPilot (CF-Pilot)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; }
+        h1, h2 { color: #333; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; }
+        input, select, button { padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #28a745; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .surplus { color: green; font-weight: bold; }
+        .deficit { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>CashFlow-AutoPilot (CF-Pilot)</h1>
+    <p>Sistem Perekodan & Laporan Aliran Tunai RP Autoparts Garage</p>
+
+    <!-- Form Input Urus Niaga Harian -->
+    <div class="card">
+        <h2>1. Rekod Transaksi Buku Kawalan Bank</h2>
+        <form id="cashForm">
+            <input type="date" id="tarikh" required>
+            <input type="text" id="keterangan" placeholder="Keterangan (cth: Jualan/Stok)" required>
+            <select id="jenis">
+                <option value="masuk">Aliran Masuk (Penerimaan)</option>
+                <option value="keluar">Aliran Keluar (Pembayaran)</option>
+            </select>
+            <input type="number" id="jumlah" placeholder="Jumlah (RM)" step="0.01" required>
+            <button type="submit">Tambah Transaksi</button>
+        </form>
+    </div>
+
+    <!-- Ringkasan Penyata Aliran Tunai -->
+    <div class="card">
+        <h2>2. Ringkasan Penyata Aliran Tunai</h2>
+        <p>Total Aliran Masuk: <strong>RM <span id="totalMasuk">0.00</span></strong></p>
+        <p>Total Aliran Keluar: <strong>RM <span id="totalKeluar">0.00</span></strong></p>
+        <p>Aliran Tunai Bersih: <strong>RM <span id="tunaiBersih">0.00</span></strong></p>
+    </div>
+
+    <!-- Senarai Transaksi (Buku Kawalan Bank) -->
+    <div class="card">
+        <h2>3. Senarai Transaksi Buku Kawalan Bank</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tarikh</th>
+                    <th>Keterangan</th>
+                    <th>Jenis</th>
+                    <th>Jumlah (RM)</th>
+                </tr>
+            </thead>
+            <tbody id="senaraiTransaksi">
+                <!-- Data akan dimasukkan di sini melalui JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let totalMasuk = 0;
+        let totalKeluar = 0;
+
+        document.getElementById('cashForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const tarikh = document.getElementById('tarikh').value;
+            const keterangan = document.getElementById('keterangan').value;
+            const jenis = document.getElementById('jenis').value;
+            const jumlah = parseFloat(document.getElementById('jumlah').value);
+
+            // Tambah ke jadual
+            const tbody = document.getElementById('senaraiTransaksi');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${tarikh}</td>
+                <td>${keterangan}</td>
+                <td>${jenis === 'masuk' ? 'Aliran Masuk' : 'Aliran Keluar'}</td>
+                <td>RM ${jumlah.toFixed(2)}</td>
+            `;
+            tbody.appendChild(row);
+
+            // Pengiraan Aliran Tunai
+            if (jenis === 'masuk') {
+                totalMasuk += jumlah;
+            } else {
+                totalKeluar += jumlah;
+            }
+
+            const tunaiBersih = totalMasuk - totalKeluar;
+
+            // Kemaskini Paparan Ringkasan
+            document.getElementById('totalMasuk').textContent = totalMasuk.toFixed(2);
+            document.getElementById('totalKeluar').textContent = totalKeluar.toFixed(2);
+            
+            const tunaiBersihElem = document.getElementById('tunaiBersih');
+            tunaiBersihElem.textContent = tunaiBersih.toFixed(2);
+            if (tunaiBersih >= 0) {
+                tunaiBersihElem.className = 'surplus';
+            } else {
+                tunaiBersihElem.className = 'deficit';
+            }
+
+            // Form Reset
+            document.getElementById('cashForm').reset();
+        });
+    </script>
+
+</body>
+</html>
